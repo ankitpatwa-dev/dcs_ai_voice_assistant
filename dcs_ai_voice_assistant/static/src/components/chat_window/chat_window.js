@@ -1,23 +1,29 @@
-import { Component, onMounted, useRef, useState } from "@odoo/owl";
+import { Component, onMounted, signal, t, usePlugin, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
-import { useService } from "@web/core/utils/hooks";
+import { AiAssistantPlugin } from "../../services/ai_assistant_plugin";
 import { AiMessageList } from "../message_list/message_list";
 import { AiMicrophone } from "../microphone/microphone";
 
 export class AiChatWindow extends Component {
     static template = "dcs_ai_voice_assistant.ChatWindow";
     static components = { AiMessageList, AiMicrophone };
-    static props = {
-        mode: { type: String, optional: true }, // "floating" | "page"
-        onClose: { type: Function, optional: true },
-    };
-    static defaultProps = { mode: "floating" };
+    props = useProps({
+        mode: t.string().optional("floating"), // "floating" | "page"
+        onClose: t.function().optional(),
+    });
+    ai = usePlugin(AiAssistantPlugin);
+    input = signal.ref();
 
     setup() {
-        this.ai = useService("dcs_ai_assistant");
-        this.state = useState(this.ai.state);
-        this.input = useRef("input");
-        onMounted(() => this.input.el?.focus());
+        onMounted(() => this.input()?.focus());
+    }
+
+    get state() {
+        return this.ai.state;
+    }
+
+    get mode() {
+        return this.props.mode || "floating";
     }
 
     get suggestions() {
@@ -40,14 +46,14 @@ export class AiChatWindow extends Component {
             transcribing: _t("Transcribing your voice…"),
             thinking: _t("Thinking…"),
             speaking: _t("Speaking…"),
-        }[this.state.phase] || "";
+        }[this.state.phase] || _t("Ask questions, create and update records");
     }
 
     get placeholder() {
-        if (!this.state.config.text_enabled) {
+        if (this.state.config.text_enabled === false) {
             return _t("Text chat is disabled — use the microphone");
         }
-        return this.props.mode === "page"
+        return this.mode === "page"
             ? _t("Ask anything about your business, or tell me what to create or update…")
             : _t("Ask or give a command…");
     }
@@ -81,15 +87,20 @@ export class AiChatWindow extends Component {
         }
         const text = this.state.draft;
         this.state.draft = "";
-        if (this.input.el) {
-            this.input.el.value = "";
-            this.autosize(this.input.el);
+        const el = this.input();
+        if (el) {
+            el.value = "";
+            this.autosize(el);
         }
         this.ai.send(text, "text");
     }
 
     clear() {
         this.ai.clear();
+    }
+
+    close() {
+        this.props.onClose?.();
     }
 
     toggleSpeaker() {

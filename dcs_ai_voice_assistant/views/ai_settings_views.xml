@@ -27,16 +27,16 @@
                                     <field name="dcs_ai_api_key" password="True" class="w-100"
                                            placeholder="Paste a new key to replace the saved one"/>
                                     <div class="text-muted small">
-                                        <span invisible="not dcs_ai_api_key_set"><i class="fa fa-check text-success"/> A key is saved on the server.</span>
+                                        <span invisible="not dcs_ai_api_key_set"><i class="oi text-success" data-icon="check"/> A key is saved on the server.</span>
                                         <span invisible="dcs_ai_api_key_set">No key saved yet.</span>
                                     </div>
                                     <field name="dcs_ai_api_key_set" invisible="1"/>
                                 </div>
                             </div>
                             <div class="mt8">
-                                <button name="action_dcs_ai_test_connection" type="object" icon="fa-plug"
+                                <button name="action_dcs_ai_test_connection" type="object" icon="link"
                                         string="Test connection" class="btn-link"/>
-                                <button name="action_dcs_ai_clear_api_keys" type="object" icon="fa-trash"
+                                <button name="action_dcs_ai_clear_api_keys" type="object" icon="delete"
                                         string="Remove saved keys" class="btn-link text-danger"
                                         confirm="Remove the saved API keys? The assistant stops working until a new key is saved."/>
                             </div>

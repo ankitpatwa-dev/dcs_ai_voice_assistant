@@ -37,6 +37,7 @@ $dcs-ai-border: rgba(0, 0, 0, 0.08);
     color: inherit;
     &:hover { background: rgba(0, 0, 0, 0.08); }
 }
+.o_dcs_ai_systray .o_dcs_ai_systray_icon { font-size: 1.25rem; }
 .o_dcs_ai_systray .o_dcs_ai_systray_live {
     color: #dc3545;
     animation: dcs-ai-pulse 1.4s infinite;

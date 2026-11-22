@@ -1,0 +1,13 @@
+id,name,model_id,group_id/id,operation,domain
+access_dcs_ai_conversation_user,AI conversations: own,dcs.ai.conversation,group_ai_user,cru,"[('user_id', '=', user.id)]"
+access_dcs_ai_conversation_manager_read,AI conversations: administrators read all,dcs.ai.conversation,group_ai_manager,r,
+access_dcs_ai_conversation_manager_delete,AI conversations: administrators delete own,dcs.ai.conversation,group_ai_manager,d,"[('user_id', '=', user.id)]"
+rule_dcs_ai_conversation_company,AI conversations: multi-company,dcs.ai.conversation,,crud,"[('company_id', 'in', company_ids)]"
+access_dcs_ai_message_user,AI messages: own,dcs.ai.message,group_ai_user,cr,"[('user_id', '=', user.id)]"
+access_dcs_ai_message_manager_read,AI messages: administrators read all,dcs.ai.message,group_ai_manager,r,
+access_dcs_ai_message_manager_delete,AI messages: administrators delete own,dcs.ai.message,group_ai_manager,d,"[('user_id', '=', user.id)]"
+rule_dcs_ai_message_company,AI messages: multi-company,dcs.ai.message,,crud,"[('company_id', 'in', company_ids)]"
+access_dcs_ai_action_user,AI operations: own (read only),dcs.ai.action,group_ai_user,r,"[('user_id', '=', user.id)]"
+access_dcs_ai_action_manager,AI operations: administrators read all,dcs.ai.action,group_ai_manager,r,
+access_dcs_ai_action_system,AI operations: system administrators delete,dcs.ai.action,base.group_system,rd,
+rule_dcs_ai_action_company,AI operations: multi-company,dcs.ai.action,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"

@@ -1,14 +1,14 @@
-import { Component, useState } from "@odoo/owl";
+import { Component, t, usePlugin, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
-import { useService } from "@web/core/utils/hooks";
+import { AiAssistantPlugin } from "../../services/ai_assistant_plugin";
 
 export class AiMicrophone extends Component {
     static template = "dcs_ai_voice_assistant.Microphone";
-    static props = { size: { type: String, optional: true } };
+    props = useProps({ size: t.string().optional() });
+    ai = usePlugin(AiAssistantPlugin);
 
-    setup() {
-        this.ai = useService("dcs_ai_assistant");
-        this.state = useState(this.ai.state);
+    get state() {
+        return this.ai.state;
     }
 
     get listening() {

@@ -1,21 +1,24 @@
-# AI Voice Assistant for Odoo 19 Community
+# AI Voice Assistant for Odoo 20 Community
 
-`dcs_ai_voice_assistant` · version 19.0.1.0.0 · by Devscodespace · LGPL-3
+`dcs_ai_voice_assistant` · version 20.0.1.0.0 · by Devscodespace · LGPL-3
 
 Talk to Odoo or type to it. The assistant answers questions from your real ERP data and prepares new records
 and changes, which it only carries out after you confirm them. It runs as the signed-in user, so Odoo's access
 rights, record rules and multi-company rules apply to everything it does. Every operation is written to an
 audit log.
 
-## Odoo 19 notes
+## Odoo 20 notes
 
-Port of the 18.0 build; features, data model, security model and UI are the same. Changes:
+Port of the 19.0 build; features, data model, security model and UI are the same. Changes:
 
-* Groups use Odoo 19's `res.groups.privilege` (`privilege_id`, `user_ids`).
-* JSON routes declared as `type="jsonrpc"`.
-* Field access checked with `_has_field_access()`; the removed contact field `mobile` is no longer used.
-* Search views without `<group expand/string>`; settings action opens with `target="current"`.
-* Odoo 19 does not load demo data by default: use `--with-demo` if you want sample data to try the assistant.
+* Access rights and record rules are in `security/ir.access.csv` (Odoo 20's merged format): group rows grant
+  access (own records for users, all records read-only for AI administrators), rows without a group are the
+  multi-company restrictions.
+* System parameters read and written with Odoo 20's typed `get_str` / `set_str`.
+* Frontend rewritten for OWL 3: the assistant is a global `Plugin` (`services.add`), components use
+  `usePlugin`, `useProps`, `proxy` and `signal.ref()`, templates use `this.` and `t-out`.
+* Icons are Material Symbols (`<i class="oi" data-icon="…"/>`); Font Awesome is not loaded in Odoo 20.
+* Odoo 20 does not load demo data by default: use `--with-demo` if you want sample data to try the assistant.
 
 ---
 
@@ -41,7 +44,7 @@ what is installed **and** what the current user may access.
 2. Make sure the Python package `requests` is installed (it is part of Odoo's standard requirements).
 3. Restart Odoo, update the Apps list and install **AI Voice Assistant**.
 
-Requirements: Odoo 19.0 Community (no Enterprise modules are used). Required modules: `base`, `base_setup`,
+Requirements: Odoo 20.0 Community (no Enterprise modules are used). Required modules: `base`, `base_setup`,
 `web`, `mail`. Recommended: Contacts, CRM, Sales, Purchase, Inventory, Invoicing.
 
 Microphone access requires the Odoo site to be served over **HTTPS** (or `localhost`); browsers block the

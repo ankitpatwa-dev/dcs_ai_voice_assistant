@@ -78,7 +78,7 @@ class TestSecurity(AiAssistantCase):
         self.assertTrue(public["configured"])
         # normal users cannot read the parameter directly
         with self.assertRaises(AccessError):
-            self.uenv()["ir.config_parameter"].get_param("dcs_ai_voice_assistant.api_key")
+            self.uenv()["ir.config_parameter"].get_str("dcs_ai_voice_assistant.api_key")
 
     def test_settings_keep_key_when_left_empty(self):
         settings = self.env["res.config.settings"].create({"dcs_ai_model": "other-model"})

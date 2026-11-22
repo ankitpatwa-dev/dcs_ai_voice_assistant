@@ -57,7 +57,7 @@ class DcsAiProvider(models.AbstractModel):
         params = self.env["ir.config_parameter"].sudo()
         config = {}
         for key, (kind, default) in CONFIG_KEYS.items():
-            raw = params.get_param(PREFIX + key)
+            raw = params.get_str(PREFIX + key, None)
             config[key] = _cast(kind, raw, default)
         return config
 
@@ -70,7 +70,7 @@ class DcsAiProvider(models.AbstractModel):
                 value = "1" if value else "0"
             elif value is False or value is None:
                 value = ""
-            params.set_param(PREFIX + key, str(value))
+            params.set_str(PREFIX + key, str(value))
 
     @api.model
     def _get_public_config(self):

@@ -1,6 +1,6 @@
-import { Component, markup, onMounted, onPatched, useRef, useState } from "@odoo/owl";
+import { Component, markup, onMounted, onPatched, proxy, signal, t, usePlugin, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
-import { useService } from "@web/core/utils/hooks";
+import { AiAssistantPlugin } from "../../services/ai_assistant_plugin";
 
 function escapeHtml(text) {
     return String(text ?? "")
@@ -45,16 +45,22 @@ export function renderText(text) {
 
 export class AiDisplayBlock extends Component {
     static template = "dcs_ai_voice_assistant.DisplayBlock";
-    static props = { block: Object };
-
-    setup() {
-        this.ai = useService("dcs_ai_assistant");
-        this.state = useState({ expanded: false });
-    }
+    props = useProps({ block: t.object() });
+    ai = usePlugin(AiAssistantPlugin);
+    local = proxy({ expanded: false });
 
     get visibleRows() {
         const rows = this.props.block.rows || [];
-        return this.state.expanded ? rows : rows.slice(0, 8);
+        return this.local.expanded ? rows : rows.slice(0, 8);
+    }
+
+    rowsOf(table) {
+        const rows = table.rows || [];
+        return this.local.expanded ? rows : rows.slice(0, 8);
+    }
+
+    toggleExpanded() {
+        this.local.expanded = !this.local.expanded;
     }
 
     open(row, model) {
@@ -67,15 +73,16 @@ export class AiDisplayBlock extends Component {
     isClickable(row, model) {
         return Boolean(row.link || (row.id && (model || this.props.block.model)));
     }
+
+    isNumeric(col) {
+        return ["integer", "float", "monetary"].includes(col.type);
+    }
 }
 
 export class AiActionCard extends Component {
     static template = "dcs_ai_voice_assistant.ActionCard";
-    static props = { action: Object, compact: { type: Boolean, optional: true } };
-
-    setup() {
-        this.ai = useService("dcs_ai_assistant");
-    }
+    props = useProps({ action: t.object(), compact: t.boolean().optional() });
+    ai = usePlugin(AiAssistantPlugin);
 
     get stateLabel() {
         return {
@@ -113,16 +120,19 @@ export class AiActionCard extends Component {
 export class AiMessageList extends Component {
     static template = "dcs_ai_voice_assistant.MessageList";
     static components = { AiDisplayBlock, AiActionCard };
-    static props = { suggestions: { type: Array, optional: true } };
+    props = useProps({ suggestions: t.array().optional() });
+    ai = usePlugin(AiAssistantPlugin);
+    root = signal.ref();
 
     setup() {
-        this.ai = useService("dcs_ai_assistant");
-        this.state = useState(this.ai.state);
-        this.root = useRef("root");
         this.lastCount = 0;
+        this.renderText = renderText;
         onMounted(() => this.scrollToEnd());
         onPatched(() => this.scrollIfNew());
-        this.renderText = renderText;
+    }
+
+    get state() {
+        return this.ai.state;
     }
 
     scrollIfNew() {
@@ -135,7 +145,7 @@ export class AiMessageList extends Component {
 
     scrollToEnd() {
         // Child cards render after this patch: scroll once layout has settled.
-        const el = this.root.el;
+        const el = this.root();
         if (!el) {
             return;
         }

@@ -2,11 +2,11 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 {
     "name": "AI Voice Assistant",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "summary": "Talk to Odoo: ask questions about your data, create and update records "
                "by voice or text, with confirmations, access rights and an audit log.",
     "description": """
-AI Voice Assistant for Odoo 19 Community
+AI Voice Assistant for Odoo 20 Community
 ========================================
 A voice and chat assistant that works on real Odoo records through a fixed set of
 validated tools (no AI-generated Python or SQL). Every operation runs as the
@@ -21,7 +21,7 @@ Changes are prepared first and only executed after the user confirms them.
     "external_dependencies": {"python": ["requests"]},
     "data": [
         "security/security.xml",
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "data/ai_assistant_data.xml",
         "views/ai_conversation_views.xml",
         "views/ai_action_views.xml",

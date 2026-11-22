@@ -1,14 +1,13 @@
-import { Component, useState } from "@odoo/owl";
+import { Component, usePlugin } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
+import { AiAssistantPlugin } from "../../services/ai_assistant_plugin";
 
 export class AiSystrayButton extends Component {
     static template = "dcs_ai_voice_assistant.SystrayButton";
-    static props = {};
+    ai = usePlugin(AiAssistantPlugin);
 
-    setup() {
-        this.ai = useService("dcs_ai_assistant");
-        this.state = useState(this.ai.state);
+    get listening() {
+        return this.ai.state.phase === "listening";
     }
 
     onClick() {
