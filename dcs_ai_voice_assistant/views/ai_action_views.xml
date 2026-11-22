@@ -91,7 +91,7 @@
                 <separator/>
                 <filter name="today" string="Today"
                         domain="[('create_date', '>=', (context_today()).strftime('%Y-%m-%d'))]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
                     <filter name="group_operation" string="Operation" context="{'group_by': 'operation'}"/>
                     <filter name="group_model" string="Model" context="{'group_by': 'model_name'}"/>

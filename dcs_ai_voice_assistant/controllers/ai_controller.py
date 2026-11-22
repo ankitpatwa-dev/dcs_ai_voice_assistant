@@ -49,7 +49,7 @@ def _conversation(env, conversation_id):
 
 class DcsAiController(http.Controller):
 
-    @http.route("/dcs_ai/init", type="json", auth="user")
+    @http.route("/dcs_ai/init", type="jsonrpc", auth="user")
     def init(self, context=None):
         env = _env(context)
         conv = env["dcs.ai.conversation"]._get_current(create=False)
@@ -62,20 +62,20 @@ class DcsAiController(http.Controller):
             "pending_action_ids": pending.ids,
         }
 
-    @http.route("/dcs_ai/chat", type="json", auth="user")
+    @http.route("/dcs_ai/chat", type="jsonrpc", auth="user")
     def chat(self, message, conversation_id=None, input_mode="text", context=None):
         env = _env(context)
         conv = _conversation(env, conversation_id)
         return env["dcs.ai.executor"].process(message, conversation=conv,
                                               input_mode="voice" if input_mode == "voice" else "text")
 
-    @http.route("/dcs_ai/action/decide", type="json", auth="user")
+    @http.route("/dcs_ai/action/decide", type="jsonrpc", auth="user")
     def decide(self, action_ids, approve, context=None):
         env = _env(context)
         ids = [int(i) for i in (action_ids if isinstance(action_ids, list) else [action_ids])]
         return env["dcs.ai.executor"].decide(ids, bool(approve))
 
-    @http.route("/dcs_ai/conversation/clear", type="json", auth="user")
+    @http.route("/dcs_ai/conversation/clear", type="jsonrpc", auth="user")
     def clear(self, conversation_id=None, context=None):
         env = _env(context)
         if conversation_id:
@@ -84,7 +84,7 @@ class DcsAiController(http.Controller):
                 conv.action_clear()
         return {"conversation_id": False, "messages": []}
 
-    @http.route("/dcs_ai/transcribe", type="json", auth="user")
+    @http.route("/dcs_ai/transcribe", type="jsonrpc", auth="user")
     def transcribe(self, audio, mimetype="audio/webm", context=None):
         env = _env(context)
         try:
@@ -99,7 +99,7 @@ class DcsAiController(http.Controller):
             _logger.warning("Transcription failed (%s): %s", e.code, e.detail or e.user_message)
             return {"error": e.user_message}
 
-    @http.route("/dcs_ai/speak", type="json", auth="user")
+    @http.route("/dcs_ai/speak", type="jsonrpc", auth="user")
     def speak(self, text, context=None):
         env = _env(context)
         try:

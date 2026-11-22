@@ -82,7 +82,7 @@
                 <separator/>
                 <filter name="archived" string="Cleared" domain="[('active', '=', False)]"/>
                 <filter name="all" string="Active and cleared" domain="['|', ('active', '=', True), ('active', '=', False)]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
                 </group>
             </search>

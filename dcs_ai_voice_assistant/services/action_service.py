@@ -63,13 +63,13 @@ class ToolError(Exception):
 OBJECTS = {
     "contact": {
         "model": "res.partner", "label": "Contact (customer / vendor / company / person)",
-        "default_fields": ["name", "is_company", "parent_id", "email", "phone", "mobile", "city",
+        "default_fields": ["name", "is_company", "parent_id", "email", "phone", "city",
                            "country_id", "user_id"],
         "order": "name",
-        "create": ["name", "is_company", "parent_id", "email", "phone", "mobile", "street", "street2",
+        "create": ["name", "is_company", "parent_id", "email", "phone", "street", "street2",
                    "city", "zip", "state_id", "country_id", "website", "vat", "function", "comment",
                    "category_id", "user_id", "partner_role"],
-        "update": ["name", "is_company", "parent_id", "email", "phone", "mobile", "street", "street2",
+        "update": ["name", "is_company", "parent_id", "email", "phone", "street", "street2",
                    "city", "zip", "state_id", "country_id", "website", "vat", "function", "comment",
                    "category_id", "user_id", "partner_role"],
         "required": ["name"],
@@ -284,7 +284,7 @@ class ToolContext:
 # Field helpers
 # ---------------------------------------------------------------------------------------
 def _field_accessible(model, field):
-    return field.is_accessible(model.env)
+    return model._has_field_access(field, "read")
 
 
 def _check_field_name(model, fname, purpose="read"):
@@ -785,7 +785,10 @@ def search_records(ctx, object, filters=None, fields=None, order_by=None, limit=
     spec = get_spec(ctx.env, object)
     model = ctx.env[spec["model"]]
     domain = build_domain(ctx.env, spec, filters)
-    fnames = [f for f in (fields or spec.get("default_fields") or ["display_name"]) if f]
+    if fields:
+        fnames = [f for f in fields if f]
+    else:  # defaults: skip fields of apps/versions that are not present
+        fnames = [f for f in spec.get("default_fields") or ["display_name"] if f in model._fields]
     for fname in fnames:
         _check_field_name(model, fname)
     order = _order_clause(model, spec, order_by)
@@ -1481,7 +1484,7 @@ def prepare_inventory_adjustment(ctx, product=None, quantity=None, warehouse=Non
     prod = resolve_record(env, "product.product", product, label="product")
     if not prod.is_storable:
         raise ToolError("%s is not tracked in inventory." % prod.display_name, code="invalid_value")
-    if prod.tracking != "none":
+    if prod.tracking not in ("none", False):
         raise ToolError("%s is tracked by lots/serial numbers; adjust it in Inventory." % prod.display_name,
                         code="unsupported")
     qty = _parse_number(quantity, "quantity")
