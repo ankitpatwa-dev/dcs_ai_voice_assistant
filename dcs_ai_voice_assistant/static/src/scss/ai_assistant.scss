@@ -1,0 +1,411 @@
+// AI Voice Assistant — styles. Self-contained: only Bootstrap CSS variables are assumed.
+$dcs-ai-accent: #714b67;
+$dcs-ai-accent-2: #017e84;
+$dcs-ai-radius: 14px;
+$dcs-ai-border: rgba(0, 0, 0, 0.08);
+
+@keyframes dcs-ai-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.45); }
+    70% { box-shadow: 0 0 0 14px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+@keyframes dcs-ai-wave {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+}
+@keyframes dcs-ai-dot {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+}
+@keyframes dcs-ai-pop {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes dcs-ai-spin-glow {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(360deg); }
+}
+
+// --------------------------------------------------------------- systray
+.o_dcs_ai_systray > button {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 0.6rem;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    &:hover { background: rgba(0, 0, 0, 0.08); }
+}
+.o_dcs_ai_systray .o_dcs_ai_systray_live {
+    color: #dc3545;
+    animation: dcs-ai-pulse 1.4s infinite;
+    border-radius: 50%;
+}
+
+// --------------------------------------------------------------- floating
+.o_dcs_ai_floating {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1055;
+    pointer-events: none;
+    > * { pointer-events: auto; }
+}
+.o_dcs_ai_fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 0;
+    color: #fff;
+    font-size: 22px;
+    background: linear-gradient(135deg, $dcs-ai-accent, $dcs-ai-accent-2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    &:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28); }
+    &:focus-visible { outline: 3px solid rgba($dcs-ai-accent, 0.4); outline-offset: 2px; }
+}
+.o_dcs_ai_popup {
+    width: 420px;
+    height: calc(100vh - 100px);
+    max-height: 680px;
+    animation: dcs-ai-pop 0.18s ease-out;
+}
+@media (max-width: 575.98px) {
+    .o_dcs_ai_floating { right: 0; bottom: 0; left: 0; }
+    .o_dcs_ai_fab { position: absolute; right: 16px; bottom: 16px; }
+    .o_dcs_ai_popup { width: 100vw; height: calc(100vh - 46px); max-height: none; }
+    .o_dcs_ai_popup .o_dcs_ai_chat { border-radius: $dcs-ai-radius $dcs-ai-radius 0 0; }
+}
+
+// --------------------------------------------------------------- page
+.o_dcs_ai_page {
+    background: var(--bs-tertiary-bg, #f6f7f9);
+    height: 100%;
+    overflow: hidden;
+    .o_dcs_ai_page_inner {
+        max-width: 980px;
+        height: 100%;
+        margin: 0 auto;
+        padding: 16px;
+    }
+    .o_dcs_ai_chat { box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06); }
+}
+
+// --------------------------------------------------------------- window
+.o_dcs_ai_chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid $dcs-ai-border;
+    border-radius: $dcs-ai-radius;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+    font-size: 0.95rem;
+}
+.o_dcs_ai_header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: #fff;
+    background: linear-gradient(120deg, $dcs-ai-accent, $dcs-ai-accent-2);
+    .o_dcs_ai_title { flex: 1; min-width: 0; }
+    .o_dcs_ai_title_main { font-weight: 600; font-size: 1.02rem; }
+    .o_dcs_ai_subtitle {
+        font-size: 0.8rem;
+        opacity: 0.85;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .o_dcs_ai_icon_btn { color: #fff; opacity: 0.85; &:hover, &.active { opacity: 1; background: rgba(255, 255, 255, 0.18); } }
+}
+.o_dcs_ai_avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    flex: none;
+    &.o_dcs_ai_phase_thinking, &.o_dcs_ai_phase_transcribing { animation: dcs-ai-spin-glow 2s linear infinite; background: rgba(255, 255, 255, 0.35); }
+    &.o_dcs_ai_phase_listening { background: #dc3545; animation: dcs-ai-pulse 1.4s infinite; }
+    &.o_dcs_ai_phase_speaking { background: rgba(255, 255, 255, 0.4); }
+}
+.o_dcs_ai_icon_btn {
+    font-size: 0.95rem;
+    border: 0;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    &:disabled { opacity: 0.4 !important; }
+}
+.o_dcs_ai_loading { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--bs-secondary-color, #6c757d); }
+
+// --------------------------------------------------------------- messages
+.o_dcs_ai_messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 12px 6px;
+    background: var(--bs-tertiary-bg, #f7f8fa);
+}
+.o_dcs_ai_welcome {
+    text-align: center;
+    padding: 18px 8px;
+    h4 { margin: 10px 0 6px; font-weight: 600; }
+    p { font-size: 0.88rem; max-width: 440px; margin: 0 auto 14px; }
+}
+.o_dcs_ai_welcome_icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    background: linear-gradient(135deg, $dcs-ai-accent, $dcs-ai-accent-2);
+}
+.o_dcs_ai_suggestions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.o_dcs_ai_chip {
+    border: 1px solid rgba($dcs-ai-accent, 0.25);
+    background: var(--bs-body-bg, #fff);
+    color: $dcs-ai-accent;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    transition: background 0.15s;
+    &:hover { background: rgba($dcs-ai-accent, 0.08); }
+}
+.o_dcs_ai_msg {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+    animation: dcs-ai-pop 0.15s ease-out;
+    &.o_dcs_ai_msg_user { align-items: flex-end; }
+    &.o_dcs_ai_msg_assistant { align-items: flex-start; }
+    &.o_dcs_ai_msg_pending { opacity: 0.7; }
+}
+.o_dcs_ai_bubble {
+    max-width: 92%;
+    padding: 9px 12px;
+    border-radius: 16px;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid $dcs-ai-border;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    overflow-wrap: anywhere;
+    .o_dcs_ai_msg_user & {
+        color: #fff;
+        background: $dcs-ai-accent;
+        border-color: $dcs-ai-accent;
+        border-bottom-right-radius: 4px;
+    }
+    .o_dcs_ai_msg_assistant & { border-bottom-left-radius: 4px; }
+    .o_dcs_ai_msg_error & { background: #fff5f5; border-color: #f5c2c7; color: #842029; }
+}
+.o_dcs_ai_text {
+    p { margin: 0 0 6px; &:last-child { margin-bottom: 0; } }
+    ul { margin: 2px 0 6px; padding-left: 18px; }
+    code { font-size: 0.85em; padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.06); color: inherit; }
+}
+.o_dcs_ai_meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 2px 6px 0;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color, #6c757d);
+    min-height: 4px;
+    .o_dcs_ai_speak_btn { color: inherit; font-size: 0.85rem; &:hover { color: $dcs-ai-accent; } }
+}
+.o_dcs_ai_typing { display: flex; align-items: center; }
+.o_dcs_ai_dots {
+    display: inline-flex;
+    gap: 4px;
+    i { width: 7px; height: 7px; border-radius: 50%; background: $dcs-ai-accent; animation: dcs-ai-dot 1.2s infinite; }
+    i:nth-child(2) { animation-delay: 0.15s; }
+    i:nth-child(3) { animation-delay: 0.3s; }
+}
+
+// --------------------------------------------------------------- blocks
+.o_dcs_ai_block {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 1px solid $dcs-ai-border;
+    border-radius: 10px;
+    background: var(--bs-body-bg, #fff);
+    min-width: 260px;
+}
+.o_dcs_ai_block_title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    .o_dcs_ai_count { font-weight: 400; color: var(--bs-secondary-color, #6c757d); font-size: 0.78rem; }
+}
+.o_dcs_ai_subtitle_sm { font-weight: 600; font-size: 0.78rem; margin: 10px 0 4px; color: var(--bs-secondary-color, #6c757d); text-transform: uppercase; letter-spacing: 0.03em; }
+.o_dcs_ai_table {
+    font-size: 0.82rem;
+    th { font-weight: 600; white-space: nowrap; color: var(--bs-secondary-color, #6c757d); border-bottom-width: 1px; }
+    td { vertical-align: top; }
+    .o_dcs_ai_clickable { cursor: pointer; &:hover td { color: $dcs-ai-accent; } }
+}
+.o_dcs_ai_fields {
+    display: grid;
+    grid-template-columns: minmax(90px, auto) 1fr;
+    gap: 2px 12px;
+    margin: 0 0 8px;
+    font-size: 0.83rem;
+    dt { font-weight: 500; color: var(--bs-secondary-color, #6c757d); }
+    dd { margin: 0; }
+}
+.o_dcs_ai_stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+}
+.o_dcs_ai_stat {
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba($dcs-ai-accent, 0.06);
+    .o_dcs_ai_stat_value { font-weight: 700; font-size: 1rem; color: $dcs-ai-accent; }
+    .o_dcs_ai_stat_label { font-size: 0.74rem; color: var(--bs-secondary-color, #6c757d); }
+}
+
+// --------------------------------------------------------------- proposals
+.o_dcs_ai_action {
+    margin-top: 8px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba($dcs-ai-accent, 0.25);
+    border-left: 4px solid $dcs-ai-accent;
+    background: var(--bs-body-bg, #fff);
+    min-width: 260px;
+    &.o_dcs_ai_action_done { border-left-color: #198754; }
+    &.o_dcs_ai_action_failed { border-left-color: #dc3545; }
+    &.o_dcs_ai_action_cancelled, &.o_dcs_ai_action_expired { border-left-color: #adb5bd; opacity: 0.85; }
+    &.o_dcs_ai_action_compact { padding: 6px 9px; }
+}
+.o_dcs_ai_action_head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.87rem;
+    > i { margin-top: 3px; }
+    strong { min-width: 0; }
+    .badge { flex: none; font-weight: 500; }
+}
+.o_dcs_ai_preview {
+    list-style: none;
+    margin: 8px 0 4px;
+    padding: 0;
+    font-size: 0.83rem;
+    li { display: flex; gap: 10px; padding: 2px 0; border-bottom: 1px dashed $dcs-ai-border; &:last-child { border: 0; } }
+    .o_dcs_ai_preview_label { min-width: 96px; color: var(--bs-secondary-color, #6c757d); }
+    .o_dcs_ai_preview_value { flex: 1; }
+}
+.o_dcs_ai_action_line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 0.83rem;
+    .badge { font-weight: 500; }
+}
+.o_dcs_ai_warning { font-size: 0.8rem; color: #856404; background: #fff3cd; border-radius: 6px; padding: 4px 8px; margin-top: 6px; }
+.o_dcs_ai_error_text { font-size: 0.8rem; color: #842029; margin-top: 6px; }
+.o_dcs_ai_action_buttons { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+// --------------------------------------------------------------- live bars
+.o_dcs_ai_live_bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-top: 1px solid $dcs-ai-border;
+    .o_dcs_ai_live_text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    &.o_dcs_ai_live_listening { background: #fff1f2; color: #b02a37; .o_dcs_ai_wave i { background: #dc3545; } }
+    &.o_dcs_ai_live_speaking { background: rgba($dcs-ai-accent-2, 0.08); color: $dcs-ai-accent-2; }
+    .o_dcs_ai_icon_btn { color: inherit; &:hover { background: rgba(0, 0, 0, 0.06); } }
+}
+.o_dcs_ai_wave {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 18px;
+    i {
+        width: 3px;
+        height: 100%;
+        border-radius: 2px;
+        background: $dcs-ai-accent-2;
+        animation: dcs-ai-wave 0.9s ease-in-out infinite;
+    }
+    i:nth-child(2) { animation-delay: 0.1s; }
+    i:nth-child(3) { animation-delay: 0.2s; }
+    i:nth-child(4) { animation-delay: 0.3s; }
+    i:nth-child(5) { animation-delay: 0.4s; }
+    &.o_dcs_ai_wave_paused i { animation-play-state: paused; }
+}
+
+// --------------------------------------------------------------- composer
+.o_dcs_ai_composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid $dcs-ai-border;
+    background: var(--bs-body-bg, #fff);
+}
+.o_dcs_ai_input {
+    flex: 1;
+    resize: none;
+    max-height: 140px;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    outline: none;
+    line-height: 1.35;
+    background: var(--bs-body-bg, #fff);
+    color: inherit;
+    &:focus { border-color: $dcs-ai-accent; box-shadow: 0 0 0 3px rgba($dcs-ai-accent, 0.12); }
+}
+.o_dcs_ai_send, .o_dcs_ai_mic {
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s, background 0.15s;
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+    &:not(:disabled):hover { transform: scale(1.06); }
+}
+.o_dcs_ai_send { color: #fff; background: $dcs-ai-accent; }
+.o_dcs_ai_mic {
+    color: $dcs-ai-accent;
+    background: rgba($dcs-ai-accent, 0.1);
+    i { position: relative; z-index: 1; }
+    &.o_dcs_ai_mic_listening { color: #fff; background: #dc3545; animation: dcs-ai-pulse 1.4s infinite; }
+    &.o_dcs_ai_mic_busy { color: $dcs-ai-accent-2; }
+    &.o_dcs_ai_mic_lg { width: 44px; height: 44px; font-size: 1.1rem; }
+}
+.o_dcs_ai_mic_ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(220, 53, 69, 0.5);
+    transition: transform 0.08s linear;
+}

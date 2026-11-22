@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_dcs_ai" model="ir.module.category">
+        <field name="name">AI Voice Assistant</field>
+        <field name="sequence">90</field>
+    </record>
+
+    <record id="group_ai_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_dcs_ai"/>
+        <field name="comment">Can use the assistant. Every operation still follows the user's own access rights.</field>
+    </record>
+
+    <record id="group_ai_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="module_category_dcs_ai"/>
+        <field name="implied_ids" eval="[(4, ref('group_ai_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Can read every user's assistant conversations and the full audit log.</field>
+    </record>
+
+    <!-- All internal users get the assistant by default; remove the implication to restrict it. -->
+    <record id="base.group_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_ai_user'))]"/>
+    </record>
+
+    <!-- Conversations -->
+    <record id="rule_conversation_own" model="ir.rule">
+        <field name="name">AI conversations: own only</field>
+        <field name="model_id" ref="model_dcs_ai_conversation"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_user'))]"/>
+    </record>
+    <record id="rule_conversation_manager" model="ir.rule">
+        <field name="name">AI conversations: administrators read all</field>
+        <field name="model_id" ref="model_dcs_ai_conversation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_manager'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_conversation_company" model="ir.rule">
+        <field name="name">AI conversations: multi-company</field>
+        <field name="model_id" ref="model_dcs_ai_conversation"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Messages -->
+    <record id="rule_message_own" model="ir.rule">
+        <field name="name">AI messages: own only</field>
+        <field name="model_id" ref="model_dcs_ai_message"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_user'))]"/>
+    </record>
+    <record id="rule_message_manager" model="ir.rule">
+        <field name="name">AI messages: administrators read all</field>
+        <field name="model_id" ref="model_dcs_ai_message"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_manager'))]"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="rule_message_company" model="ir.rule">
+        <field name="name">AI messages: multi-company</field>
+        <field name="model_id" ref="model_dcs_ai_message"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Operations / audit log -->
+    <record id="rule_action_own" model="ir.rule">
+        <field name="name">AI operations: own only</field>
+        <field name="model_id" ref="model_dcs_ai_action"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_user'))]"/>
+    </record>
+    <record id="rule_action_manager" model="ir.rule">
+        <field name="name">AI operations: administrators read all</field>
+        <field name="model_id" ref="model_dcs_ai_action"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_ai_manager'))]"/>
+    </record>
+    <record id="rule_action_company" model="ir.rule">
+        <field name="name">AI operations: multi-company</field>
+        <field name="model_id" ref="model_dcs_ai_action"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

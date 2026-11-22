@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_dcs_ai" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.dcs.ai.voice.assistant</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='general_settings']" position="inside">
+                <block title="AI Voice Assistant" name="dcs_ai_voice_assistant" id="dcs_ai_voice_assistant">
+                    <setting string="AI provider" help="Language model used to understand requests and call Odoo tools">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dcs_ai_provider" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_provider" class="col-lg-8"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_model" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_model" class="col-lg-8" placeholder="gpt-5.6-luna"/>
+                            </div>
+                            <div class="row" invisible="dcs_ai_provider == 'openai'">
+                                <label for="dcs_ai_base_url" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_base_url" class="col-lg-8" placeholder="https://openrouter.ai/api/v1"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_api_key" class="col-lg-4 o_light_label"/>
+                                <div class="col-lg-8">
+                                    <field name="dcs_ai_api_key" password="True" class="w-100"
+                                           placeholder="Paste a new key to replace the saved one"/>
+                                    <div class="text-muted small">
+                                        <span invisible="not dcs_ai_api_key_set"><i class="fa fa-check text-success"/> A key is saved on the server.</span>
+                                        <span invisible="dcs_ai_api_key_set">No key saved yet.</span>
+                                    </div>
+                                    <field name="dcs_ai_api_key_set" invisible="1"/>
+                                </div>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_dcs_ai_test_connection" type="object" icon="fa-plug"
+                                        string="Test connection" class="btn-link"/>
+                                <button name="action_dcs_ai_clear_api_keys" type="object" icon="fa-trash"
+                                        string="Remove saved keys" class="btn-link text-danger"
+                                        confirm="Remove the saved API keys? The assistant stops working until a new key is saved."/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Answer style" help="Lower temperature gives more predictable answers">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dcs_ai_temperature" class="col-lg-6 o_light_label"/>
+                                <field name="dcs_ai_temperature" class="col-lg-6"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_max_tokens" class="col-lg-6 o_light_label"/>
+                                <field name="dcs_ai_max_tokens" class="col-lg-6"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_history_messages" class="col-lg-6 o_light_label"/>
+                                <field name="dcs_ai_history_messages" class="col-lg-6"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_language" class="col-lg-6 o_light_label"/>
+                                <field name="dcs_ai_language" class="col-lg-6"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting help="Talk to the assistant with the microphone">
+                        <field name="dcs_ai_voice_enabled"/>
+                        <div class="content-group" invisible="not dcs_ai_voice_enabled">
+                            <div class="row mt8">
+                                <label for="dcs_ai_stt_provider" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_stt_provider" class="col-lg-8"/>
+                            </div>
+                            <div class="row" invisible="dcs_ai_stt_provider == 'browser'">
+                                <label for="dcs_ai_stt_model" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_stt_model" class="col-lg-8" placeholder="gpt-transcribe"/>
+                            </div>
+                            <div class="row">
+                                <label for="dcs_ai_tts_provider" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_tts_provider" class="col-lg-8"/>
+                            </div>
+                            <div class="row" invisible="dcs_ai_tts_provider == 'browser'">
+                                <label for="dcs_ai_tts_model" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_tts_model" class="col-lg-8" placeholder="gpt-4o-mini-tts"/>
+                            </div>
+                            <div class="row" invisible="dcs_ai_tts_provider == 'browser'">
+                                <label for="dcs_ai_tts_voice" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_tts_voice" class="col-lg-8"/>
+                            </div>
+                            <div class="row" invisible="dcs_ai_provider == 'openai' or (dcs_ai_stt_provider == 'browser' and dcs_ai_tts_provider == 'browser')">
+                                <label for="dcs_ai_speech_api_key" class="col-lg-4 o_light_label"/>
+                                <field name="dcs_ai_speech_api_key" class="col-lg-8" password="True"/>
+                            </div>
+                            <div class="mt8">
+                                <field name="dcs_ai_auto_speak"/>
+                                <label for="dcs_ai_auto_speak" class="o_light_label"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting help="Chat with the assistant by typing">
+                        <field name="dcs_ai_text_enabled"/>
+                    </setting>
+                    <setting help="Let the assistant prepare new contacts, leads, quotations, purchase orders, invoices and activities (always confirmed by the user)">
+                        <field name="dcs_ai_allow_create"/>
+                    </setting>
+                    <setting help="Let the assistant prepare changes to existing records and business actions (always confirmed by the user)">
+                        <field name="dcs_ai_allow_update"/>
+                    </setting>
+                    <setting help="Show the round assistant button in the bottom corner of every screen (the top-bar icon is always available)">
+                        <field name="dcs_ai_show_floating_button"/>
+                    </setting>
+                    <setting help="Also record data questions (not only changes) in the operation log">
+                        <field name="dcs_ai_log_reads"/>
+                    </setting>
+                    <setting string="Retention" help="Cleared conversations are deleted after this many days (0 = keep). The operation log is kept.">
+                        <field name="dcs_ai_retention_days"/>
+                    </setting>
+                    <setting string="Additional instructions" help="Extra guidance added to the assistant's instructions, e.g. company terminology">
+                        <field name="dcs_ai_extra_instructions" placeholder="e.g. 'Leads' are called 'enquiries' in our company."/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_dcs_ai_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'general_settings', 'bin_size': False}</field>
+    </record>
+</odoo>

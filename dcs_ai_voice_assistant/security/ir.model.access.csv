@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dcs_ai_conversation_user,dcs.ai.conversation user,model_dcs_ai_conversation,group_ai_user,1,1,1,0
+access_dcs_ai_conversation_manager,dcs.ai.conversation manager,model_dcs_ai_conversation,group_ai_manager,1,1,1,1
+access_dcs_ai_message_user,dcs.ai.message user,model_dcs_ai_message,group_ai_user,1,0,1,0
+access_dcs_ai_message_manager,dcs.ai.message manager,model_dcs_ai_message,group_ai_manager,1,0,1,1
+access_dcs_ai_action_user,dcs.ai.action user,model_dcs_ai_action,group_ai_user,1,0,0,0
+access_dcs_ai_action_manager,dcs.ai.action manager,model_dcs_ai_action,group_ai_manager,1,0,0,0
+access_dcs_ai_action_system,dcs.ai.action system,model_dcs_ai_action,base.group_system,1,0,0,1

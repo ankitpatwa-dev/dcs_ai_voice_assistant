@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ===================================================== systray -->
+    <t t-name="dcs_ai_voice_assistant.SystrayButton">
+        <div class="dropdown o_dcs_ai_systray">
+            <button class="user-select-none dropdown-toggle o-no-caret o-dropdown--narrow" role="button" title="AI Assistant"
+                    aria-label="AI Assistant" t-on-click="onClick">
+                <i class="fa fa-lg fa-microphone" t-att-class="{'o_dcs_ai_systray_live': state.phase === 'listening'}"/>
+            </button>
+        </div>
+    </t>
+
+    <!-- ===================================================== floating widget -->
+    <t t-name="dcs_ai_voice_assistant.FloatingAssistant">
+        <div class="o_dcs_ai_floating">
+            <button t-if="showLauncher" class="o_dcs_ai_fab" title="AI Assistant" aria-label="Open AI Assistant"
+                    t-on-click="() => this.ai.toggle(true)">
+                <i class="fa fa-microphone"/>
+            </button>
+            <div t-if="state.open" class="o_dcs_ai_popup" role="dialog" aria-label="AI Assistant">
+                <AiChatWindow mode="'floating'" onClose.bind="close"/>
+            </div>
+        </div>
+    </t>
+
+    <!-- ===================================================== full page -->
+    <t t-name="dcs_ai_voice_assistant.AssistantPage">
+        <div class="o_action o_dcs_ai_page">
+            <div class="o_dcs_ai_page_inner">
+                <AiChatWindow mode="'page'"/>
+            </div>
+        </div>
+    </t>
+
+    <!-- ===================================================== microphone -->
+    <t t-name="dcs_ai_voice_assistant.Microphone">
+        <button type="button" t-att-title="title" t-att-aria-label="title"
+                t-att-disabled="state.phase === 'transcribing' or (state.busy and !listening)"
+                t-attf-class="o_dcs_ai_mic {{ listening ? 'o_dcs_ai_mic_listening' : '' }} {{ state.phase === 'transcribing' ? 'o_dcs_ai_mic_busy' : '' }} {{ props.size === 'lg' ? 'o_dcs_ai_mic_lg' : '' }}"
+                t-on-click="onClick">
+            <span t-if="listening" class="o_dcs_ai_mic_ring" t-att-style="ringStyle"/>
+            <i t-if="state.phase === 'transcribing'" class="fa fa-circle-o-notch fa-spin"/>
+            <i t-elif="listening" class="fa fa-stop"/>
+            <i t-else="" class="fa fa-microphone"/>
+        </button>
+    </t>
+
+    <!-- ===================================================== chat window -->
+    <t t-name="dcs_ai_voice_assistant.ChatWindow">
+        <div t-attf-class="o_dcs_ai_chat o_dcs_ai_chat_{{ props.mode }}">
+            <header class="o_dcs_ai_header">
+                <div t-attf-class="o_dcs_ai_avatar o_dcs_ai_phase_{{ state.phase }}">
+                    <i class="fa fa-magic"/>
+                </div>
+                <div class="o_dcs_ai_title">
+                    <div class="o_dcs_ai_title_main">AI Assistant</div>
+                    <div class="o_dcs_ai_subtitle" t-esc="statusText or 'Ask questions, create and update records'"/>
+                </div>
+                <div class="o_dcs_ai_header_actions">
+                    <button t-if="state.config.voice_enabled" class="btn btn-sm o_dcs_ai_icon_btn"
+                            t-att-class="{'active': state.speakerOn}" t-on-click="toggleSpeaker"
+                            t-att-title="state.speakerOn ? 'Stop reading answers aloud' : 'Read every answer aloud'">
+                        <i t-attf-class="fa {{ state.speakerOn ? 'fa-volume-up' : 'fa-volume-off' }}"/>
+                    </button>
+                    <button class="btn btn-sm o_dcs_ai_icon_btn" title="Clear conversation" t-on-click="clear"
+                            t-att-disabled="state.busy or !state.messages.length">
+                        <i class="fa fa-eraser"/>
+                    </button>
+                    <t t-if="props.mode === 'floating'">
+                        <button class="btn btn-sm o_dcs_ai_icon_btn" title="Open full screen" t-on-click="() => this.ai.openFullPage()">
+                            <i class="fa fa-expand"/>
+                        </button>
+                        <button class="btn btn-sm o_dcs_ai_icon_btn" title="Close" t-on-click="() => this.props.onClose()">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </t>
+                </div>
+            </header>
+
+            <div t-if="state.ready and !state.config.configured" class="alert alert-warning m-2 mb-0 py-2 small">
+                The AI provider is not configured yet. An administrator can add the API key in
+                <strong>Settings › General Settings › AI Voice Assistant</strong>.
+            </div>
+
+            <div t-if="!state.ready" class="o_dcs_ai_loading">
+                <i class="fa fa-circle-o-notch fa-spin me-2"/> Loading…
+            </div>
+            <AiMessageList t-else="" suggestions="suggestions"/>
+
+            <div t-if="state.phase === 'listening'" class="o_dcs_ai_live_bar o_dcs_ai_live_listening">
+                <span class="o_dcs_ai_wave"><i/><i/><i/><i/><i/></span>
+                <span class="o_dcs_ai_live_text" t-esc="state.interim or 'Listening… speak now'"/>
+                <button class="btn btn-sm btn-link" t-on-click="() => this.ai.cancelListening()">Cancel</button>
+            </div>
+            <div t-elif="state.phase === 'speaking'" class="o_dcs_ai_live_bar o_dcs_ai_live_speaking">
+                <span t-attf-class="o_dcs_ai_wave {{ state.audioPaused ? 'o_dcs_ai_wave_paused' : '' }}"><i/><i/><i/><i/><i/></span>
+                <span class="o_dcs_ai_live_text">Speaking</span>
+                <button class="btn btn-sm o_dcs_ai_icon_btn" t-att-title="state.audioPaused ? 'Resume' : 'Pause'"
+                        t-on-click="() => this.ai.togglePause()">
+                    <i t-attf-class="fa {{ state.audioPaused ? 'fa-play' : 'fa-pause' }}"/>
+                </button>
+                <button class="btn btn-sm o_dcs_ai_icon_btn" title="Stop" t-on-click="() => this.ai.stopSpeaking()">
+                    <i class="fa fa-stop"/>
+                </button>
+            </div>
+
+            <footer class="o_dcs_ai_composer">
+                <textarea t-ref="input" rows="1" class="o_dcs_ai_input" t-att-placeholder="placeholder"
+                          t-att-disabled="state.config.text_enabled === false"
+                          t-att-value="state.draft" t-on-input="onInput" t-on-keydown="onKeydown"/>
+                <AiMicrophone t-if="state.config.voice_enabled" size="props.mode === 'page' ? 'lg' : 'md'"/>
+                <button class="o_dcs_ai_send" title="Send" t-att-disabled="!canSend" t-on-click="submit">
+                    <i class="fa fa-paper-plane"/>
+                </button>
+            </footer>
+        </div>
+    </t>
+
+    <!-- ===================================================== messages -->
+    <t t-name="dcs_ai_voice_assistant.MessageList">
+        <div class="o_dcs_ai_messages" t-ref="root">
+            <div t-if="!state.messages.length" class="o_dcs_ai_welcome">
+                <div class="o_dcs_ai_welcome_icon"><i class="fa fa-magic"/></div>
+                <h4>Hi <t t-esc="state.user.name"/>, how can I help?</h4>
+                <p class="text-muted">Ask about sales, CRM, stock or accounting, or tell me what to create or update.
+                    Click the microphone to speak. I always ask before changing anything.</p>
+                <div class="o_dcs_ai_suggestions">
+                    <button t-foreach="props.suggestions or []" t-as="s" t-key="s_index" class="o_dcs_ai_chip"
+                            t-esc="s" t-on-click="() => this.useSuggestion(s)"/>
+                </div>
+            </div>
+
+            <t t-foreach="state.messages" t-as="message" t-key="message.id">
+                <div t-attf-class="o_dcs_ai_msg o_dcs_ai_msg_{{ message.role }} {{ message.is_error ? 'o_dcs_ai_msg_error' : '' }} {{ message.pending ? 'o_dcs_ai_msg_pending' : '' }}">
+                    <div class="o_dcs_ai_bubble">
+                        <div t-if="message.content" class="o_dcs_ai_text" t-out="renderText(message.content)"/>
+                        <t t-foreach="message.display or []" t-as="block" t-key="block_index">
+                            <AiActionCard t-if="block.type === 'action_result'" action="block.action" compact="true"/>
+                            <AiDisplayBlock t-else="" block="block"/>
+                        </t>
+                        <t t-foreach="message.actions or []" t-as="action" t-key="action.id">
+                            <AiActionCard action="action"/>
+                        </t>
+                    </div>
+                    <div class="o_dcs_ai_meta">
+                        <i t-if="message.input_mode === 'voice'" class="fa fa-microphone" title="Spoken"/>
+                        <button t-if="message.role === 'assistant' and message.content and state.config.voice_enabled"
+                                class="btn btn-link btn-sm p-0 o_dcs_ai_speak_btn"
+                                t-att-title="isSpeaking(message) ? 'Stop' : 'Read aloud'" t-on-click="() => this.toggleSpeak(message)">
+                            <i t-attf-class="fa {{ isSpeaking(message) ? 'fa-stop-circle' : 'fa-volume-up' }}"/>
+                        </button>
+                    </div>
+                </div>
+            </t>
+
+            <div t-if="state.busy" class="o_dcs_ai_msg o_dcs_ai_msg_assistant">
+                <div class="o_dcs_ai_bubble o_dcs_ai_typing">
+                    <span class="o_dcs_ai_dots"><i/><i/><i/></span>
+                    <span class="text-muted small ms-2" t-esc="phaseLabel"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- ===================================================== data blocks -->
+    <t t-name="dcs_ai_voice_assistant.Table">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover o_dcs_ai_table mb-0">
+                <thead>
+                    <tr>
+                        <th t-foreach="table.columns" t-as="col" t-key="col.key" t-esc="col.label"
+                            t-att-class="['integer', 'float', 'monetary'].includes(col.type) ? 'text-end' : ''"/>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="tableRows" t-as="row" t-key="row_index"
+                        t-att-class="isClickable(row, table.model) ? 'o_dcs_ai_clickable' : ''"
+                        t-att-title="isClickable(row, table.model) ? 'Open in Odoo' : ''"
+                        t-on-click="() => this.open(row, table.model)">
+                        <td t-foreach="table.columns" t-as="col" t-key="col.key" t-esc="row.cells[col.key]"
+                            t-att-class="['integer', 'float', 'monetary'].includes(col.type) ? 'text-end text-nowrap' : ''"/>
+                    </tr>
+                    <tr t-if="!tableRows.length"><td t-att-colspan="table.columns.length" class="text-muted">No records found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+    <t t-name="dcs_ai_voice_assistant.DisplayBlock">
+        <t t-set="block" t-value="props.block"/>
+        <div t-if="block.type === 'table'" class="o_dcs_ai_block">
+            <div class="o_dcs_ai_block_title">
+                <span t-esc="block.title"/>
+                <span class="o_dcs_ai_count" t-if="block.total !== undefined">
+                    <t t-esc="block.rows.length"/><t t-if="block.total > block.rows.length"> of <t t-esc="block.total"/></t>
+                </span>
+            </div>
+            <t t-call="dcs_ai_voice_assistant.Table">
+                <t t-set="table" t-value="block"/>
+                <t t-set="tableRows" t-value="visibleRows"/>
+            </t>
+            <button t-if="block.rows.length > 8" class="btn btn-link btn-sm px-0"
+                    t-on-click="() => this.state.expanded = !this.state.expanded"
+                    t-esc="state.expanded ? 'Show less' : 'Show all ' + block.rows.length + ' rows'"/>
+        </div>
+
+        <div t-elif="block.type === 'record'" class="o_dcs_ai_block o_dcs_ai_record">
+            <div class="o_dcs_ai_block_title">
+                <span t-esc="block.title"/>
+                <button class="btn btn-sm btn-link p-0" t-on-click="() => this.ai.openRecord(block.model, block.id)">
+                    Open <i class="fa fa-external-link"/>
+                </button>
+            </div>
+            <dl class="o_dcs_ai_fields">
+                <t t-foreach="block.fields" t-as="f" t-key="f_index">
+                    <dt t-esc="f.label"/><dd t-esc="f.value"/>
+                </t>
+            </dl>
+            <t t-if="block.lines and block.lines.rows.length" t-call="dcs_ai_voice_assistant.Table">
+                <t t-set="table" t-value="block.lines"/>
+                <t t-set="tableRows" t-value="block.lines.rows"/>
+            </t>
+        </div>
+
+        <div t-elif="block.type === 'summary'" class="o_dcs_ai_block o_dcs_ai_summary">
+            <div class="o_dcs_ai_block_title"><span t-esc="block.title"/></div>
+            <div class="o_dcs_ai_stats">
+                <div t-foreach="block.stats" t-as="s" t-key="s_index" class="o_dcs_ai_stat">
+                    <div class="o_dcs_ai_stat_value" t-esc="s.value"/>
+                    <div class="o_dcs_ai_stat_label" t-esc="s.label"/>
+                </div>
+            </div>
+            <t t-foreach="block.tables or []" t-as="tbl" t-key="tbl_index">
+                <div class="o_dcs_ai_subtitle_sm" t-esc="tbl.title"/>
+                <t t-call="dcs_ai_voice_assistant.Table">
+                    <t t-set="table" t-value="tbl"/>
+                    <t t-set="tableRows" t-value="state.expanded ? tbl.rows : tbl.rows.slice(0, 8)"/>
+                </t>
+                <button t-if="tbl.rows.length > 8" class="btn btn-link btn-sm px-0"
+                        t-on-click="() => this.state.expanded = !this.state.expanded"
+                        t-esc="state.expanded ? 'Show less' : 'Show all ' + tbl.rows.length + ' rows'"/>
+            </t>
+        </div>
+    </t>
+
+    <!-- ===================================================== proposals -->
+    <t t-name="dcs_ai_voice_assistant.ActionCard">
+        <t t-set="a" t-value="props.action"/>
+        <div t-if="props.compact" t-attf-class="o_dcs_ai_action_line o_dcs_ai_action_{{ a.state }}">
+            <span t-attf-class="badge rounded-pill {{ stateClass }}" t-esc="stateLabel"/>
+            <button t-if="a.state === 'done' and a.res_id and a.model" class="btn btn-link btn-sm p-0" t-on-click="openRecord">
+                <i class="fa fa-external-link me-1"/>Open <t t-esc="a.record_name or 'record'"/>
+            </button>
+            <span t-elif="a.state === 'failed'" class="o_dcs_ai_error_text m-0">Nothing was saved.</span>
+        </div>
+        <div t-else="" t-attf-class="o_dcs_ai_action o_dcs_ai_action_{{ a.state }}">
+            <div class="o_dcs_ai_action_head">
+                <i t-attf-class="fa {{ a.operation === 'create' ? 'fa-plus-circle' : 'fa-pencil-square-o' }}"/>
+                <strong class="flex-grow-1" t-esc="a.summary"/>
+                <span t-attf-class="badge rounded-pill {{ stateClass }}" t-esc="stateLabel"/>
+            </div>
+            <ul t-if="a.preview.length" class="o_dcs_ai_preview">
+                <li t-foreach="a.preview" t-as="p" t-key="p_index">
+                    <span class="o_dcs_ai_preview_label" t-esc="p.label"/>
+                    <span class="o_dcs_ai_preview_value">
+                        <t t-if="p.old !== undefined and p.old !== p.value">
+                            <del class="text-muted" t-esc="p.old or '—'"/> <i class="fa fa-long-arrow-right mx-1 text-muted"/>
+                        </t>
+                        <t t-esc="p.value or '—'"/>
+                    </span>
+                </li>
+            </ul>
+            <t t-if="a.state === 'pending'">
+                <div t-foreach="a.warnings" t-as="w" t-key="w_index" class="o_dcs_ai_warning">
+                    <i class="fa fa-exclamation-triangle me-1"/><t t-esc="w"/>
+                </div>
+            </t>
+            <div t-if="a.state === 'failed' and a.error" class="o_dcs_ai_error_text" t-esc="a.error"/>
+            <div t-if="a.state === 'pending'" class="o_dcs_ai_action_buttons">
+                <button class="btn btn-primary btn-sm" t-att-disabled="ai.state.busy" t-on-click="confirm">
+                    <i class="fa fa-check me-1"/>Confirm
+                </button>
+                <button class="btn btn-secondary btn-sm" t-att-disabled="ai.state.busy" t-on-click="cancel">Cancel</button>
+                <span class="text-muted small ms-1">or say “yes” / “no”</span>
+            </div>
+            <div t-if="a.state === 'done' and a.res_id and a.model" class="mt-1">
+                <button class="btn btn-link btn-sm p-0" t-on-click="openRecord">
+                    <i class="fa fa-external-link me-1"/>Open <t t-esc="a.record_name or 'record'"/>
+                </button>
+            </div>
+        </div>
+    </t>
+
+</templates>

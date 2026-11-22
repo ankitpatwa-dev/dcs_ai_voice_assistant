@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dcs_ai_action_view_list" model="ir.ui.view">
+        <field name="name">dcs.ai.action.list</field>
+        <field name="model">dcs.ai.action</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false"
+                  decoration-success="state == 'done'" decoration-danger="state == 'failed'"
+                  decoration-warning="state == 'pending'" decoration-muted="state in ('cancelled', 'expired')">
+                <field name="create_date" string="Time"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="operation"/>
+                <field name="summary"/>
+                <field name="model_name" optional="show"/>
+                <field name="record_name" optional="show"/>
+                <field name="record_count" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'" decoration-warning="state == 'pending'"/>
+                <field name="decided_via" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dcs_ai_action_view_form" model="ir.ui.view">
+        <field name="name">dcs.ai.action.form</field>
+        <field name="model">dcs.ai.action</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="fa-external-link"
+                                invisible="not res_id or operation in ('read', 'aggregate')">
+                            <span class="o_stat_text">Open record</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="summary"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="operation"/>
+                            <field name="model_name"/>
+                            <field name="model_description"/>
+                            <field name="res_id" invisible="not res_id"/>
+                            <field name="record_name" invisible="not record_name"/>
+                            <field name="record_count" invisible="operation not in ('read', 'aggregate')"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Requested"/>
+                            <field name="executed_at"/>
+                            <field name="decided_via"/>
+                            <field name="expires_at" invisible="state != 'pending'"/>
+                            <field name="conversation_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="User request">
+                        <field name="input_text" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Error" invisible="not error_message">
+                        <field name="error_message" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Prepared values (administrators)" groups="dcs_ai_voice_assistant.group_ai_manager">
+                        <field name="payload_text" nolabel="1" colspan="2" widget="ace" options="{'mode': 'js'}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dcs_ai_action_view_search" model="ir.ui.view">
+        <field name="name">dcs.ai.action.search</field>
+        <field name="model">dcs.ai.action</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="summary"/>
+                <field name="user_id"/>
+                <field name="model_name"/>
+                <field name="input_text"/>
+                <filter name="changes" string="Changes" domain="[('operation', 'in', ('create', 'update'))]"/>
+                <filter name="queries" string="Data queries" domain="[('operation', 'in', ('read', 'aggregate'))]"/>
+                <separator/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <filter name="failed" string="Failed" domain="[('state', '=', 'failed')]"/>
+                <filter name="pending" string="Awaiting confirmation" domain="[('state', '=', 'pending')]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                        domain="[('create_date', '>=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_operation" string="Operation" context="{'group_by': 'operation'}"/>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_name'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dcs_ai_action" model="ir.actions.act_window">
+        <field name="name">Operation Log</field>
+        <field name="res_model">dcs.ai.action</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_changes': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No assistant operations yet</p>
+            <p>Every record the assistant creates or changes, and every proposal it makes, is listed here.</p>
+        </field>
+    </record>
+</odoo>
